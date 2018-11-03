@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<JScopeProject>
+    <FileVersion major="1" minor="1" />
+    <Project>
+        <Configuration>
+            <JLink>
+                <Options Connection="1" IsRTTSession="0" IsRTTWithTimeStamp="1" SamplingPeriod="100" SerialNo="0" JTAG_IRPre="-1" JTAG_DRPre="-1" IP="localhost" TargetDevice="STM32F407VE" TargetInterface="SWD" InterfaceSpeed="4000" />
+            </JLink>
+            <ScriptFile Name="unspecified" />
+            <ElfFile Name="E:\MCU\stm32\OpticFlowCar_F407VE\MDK-ARM\OpticFlowCar_F407VE\OpticFlowCar_F407VE.axf" />
+            <DataFile Name="" />
+            <RawFile Name="" />
+            <Scope>
+                <Options TimeResolutionUs="5000" />
+            </Scope>
+        </Configuration>
+        <Windows>
+            <Graph Show="1" />
+            <Watch Show="1" />
+        </Windows>
+        <SelectedSymbols>
+            <Symbol>
+                <Options Name="t" Address="0x200000C8" Type="uint" TypeID="8" Size="4" GraphColorRed="255" GraphColorGreen="215" GraphColorBlue="0" YMinSampled="88" YMaxSampled="144" YAvgSampled="99" Offset="4" ShowInGraph="1" ACCoupling="0" YOffset="200" IsAutoConfig="1" YResolution="50" MaxValue="268" File="..\Drivers\BSP\mpu9250\mpu9250.c" Scope="0" DrawStyle="0" />
+            </Symbol>
+        </SelectedSymbols>
+    </Project>
+</JScopeProject>
