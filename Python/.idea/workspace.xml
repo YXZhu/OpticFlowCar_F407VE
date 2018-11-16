@@ -2,8 +2,46 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="42a64980-ee88-40d8-b874-8d393fa74ce0" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/FlowDraw.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Drivers/BSP/VL53L0X_Api/vl53l0x.c" beforeDir="false" afterPath="$PROJECT_DIR$/../Drivers/BSP/VL53L0X_Api/vl53l0x.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Drivers/BSP/VL53L0X_Api/vl53l0x.h" beforeDir="false" afterPath="$PROJECT_DIR$/../Drivers/BSP/VL53L0X_Api/vl53l0x.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Drivers/BSP/motoctrl.c" beforeDir="false" afterPath="$PROJECT_DIR$/../Drivers/BSP/motoctrl.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Drivers/BSP/motoctrl.h" beforeDir="false" afterPath="$PROJECT_DIR$/../Drivers/BSP/motoctrl.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Drivers/BSP/ov7670.c" beforeDir="false" afterPath="$PROJECT_DIR$/../Drivers/BSP/ov7670.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/JLinkLog.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/JLinkLog.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE.uvguix.zhuab" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE.uvguix.zhuab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE.uvoptx" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE.uvoptx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/OpticFlowCar_F407VE.axf" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/OpticFlowCar_F407VE.axf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/OpticFlowCar_F407VE.build_log.htm" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/OpticFlowCar_F407VE.build_log.htm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/OpticFlowCar_F407VE.hex" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/OpticFlowCar_F407VE.hex" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/OpticFlowCar_F407VE.htm" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/OpticFlowCar_F407VE.htm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/OpticFlowCar_F407VE.map" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/OpticFlowCar_F407VE.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/OpticFlowCar_F407VE_OpticFlowCar_F407VE.dep" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/OpticFlowCar_F407VE_OpticFlowCar_F407VE.dep" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/dcmi.crf" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/dcmi.crf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/dcmi.o" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/dcmi.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/easytracer.crf" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/easytracer.crf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/easytracer.o" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/easytracer.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/freertos.crf" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/freertos.crf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/freertos.d" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/freertos.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/freertos.o" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/freertos.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/gpio.crf" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/gpio.crf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/gpio.o" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/gpio.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/motoctrl.crf" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/motoctrl.crf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/motoctrl.d" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/motoctrl.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/motoctrl.o" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/motoctrl.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/ov7670.crf" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/ov7670.crf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/ov7670.o" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/ov7670.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/pmw3901.crf" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/pmw3901.crf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/pmw3901.d" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/pmw3901.d" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/pmw3901.o" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/pmw3901.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/vl53l0x.crf" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/vl53l0x.crf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/vl53l0x.o" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/vl53l0x.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/vl53l0x_cali.crf" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/vl53l0x_cali.crf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/vl53l0x_cali.o" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/vl53l0x_cali.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/vl53l0x_platform.crf" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/vl53l0x_platform.crf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/vl53l0x_platform.o" beforeDir="false" afterPath="$PROJECT_DIR$/../MDK-ARM/OpticFlowCar_F407VE/vl53l0x_platform.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Src/freertos.c" beforeDir="false" afterPath="$PROJECT_DIR$/../Src/freertos.c" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -15,19 +53,21 @@
     <session id="-1875872046">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="1" />
+          <entry key="project.closed" value="3" />
+          <entry key="project.open.time.12" value="1" />
+          <entry key="project.open.time.13" value="1" />
           <entry key="project.open.time.28" value="1" />
-          <entry key="project.opened" value="1" />
+          <entry key="project.opened" value="3" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
-          <entry key="py" value="2" />
+          <entry key="py" value="4" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
-          <entry key="Python" value="2" />
+          <entry key="Python" value="4" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
@@ -44,11 +84,11 @@
     </session>
   </component>
   <component name="FileEditorManager">
-    <leaf>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/FlowDraw.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="331">
+            <state relative-caret-position="332">
               <caret line="29" column="18" selection-start-line="29" selection-start-column="11" selection-end-line="29" selection-end-column="18" />
               <folding>
                 <element signature="e#83#114#0" expanded="true" />
@@ -60,7 +100,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://D:/Program Files/Python36/Lib/site-packages/matplotlib/figure.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="158">
+            <state relative-caret-position="50092">
               <caret line="1823" column="8" selection-start-line="1823" selection-start-column="8" selection-end-line="1823" selection-end-column="8" />
             </state>
           </provider>
@@ -76,7 +116,7 @@
     </option>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../../.." />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
@@ -111,7 +151,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="settings.editor.selected.configurable" value="configurable.group.build" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -169,13 +209,9 @@
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="878" extended-state="6" />
     <layout>
-      <window_info id="Favorites" side_tool="true" />
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.12351387" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.12351387" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info anchor="bottom" id="Version Control" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Python Console" />
-      <window_info anchor="bottom" id="Terminal" />
-      <window_info anchor="bottom" id="Event Log" side_tool="true" />
+      <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
       <window_info anchor="bottom" id="Run" order="2" weight="0.32885906" />
@@ -183,6 +219,10 @@
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Version Control" order="7" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Terminal" order="8" />
+      <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
+      <window_info anchor="bottom" id="Python Console" order="10" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -191,21 +231,26 @@
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
   </component>
+  <component name="VcsManagerConfiguration">
+    <ignored-roots>
+      <path value="$PROJECT_DIR$/../../.." />
+    </ignored-roots>
+  </component>
   <component name="editorHistoryManager">
-    <entry file="file://D:/Program Files/Python36/Lib/site-packages/matplotlib/figure.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="158">
-          <caret line="1823" column="8" selection-start-line="1823" selection-start-column="8" selection-end-line="1823" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/FlowDraw.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="331">
+        <state relative-caret-position="332">
           <caret line="29" column="18" selection-start-line="29" selection-start-column="11" selection-end-line="29" selection-end-column="18" />
           <folding>
             <element signature="e#83#114#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/Program Files/Python36/Lib/site-packages/matplotlib/figure.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="50092">
+          <caret line="1823" column="8" selection-start-line="1823" selection-start-column="8" selection-end-line="1823" selection-end-column="8" />
         </state>
       </provider>
     </entry>

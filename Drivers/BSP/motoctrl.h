@@ -10,6 +10,7 @@
 #include "cmsis_os.h"
 #include "usart.h"
 #include "tim.h"
+#include "EasyTracer.h"
 #if defined(__CC_ARM) 
 	#pragma anon_unions	/*用于支持结构体联合体*/
 #endif

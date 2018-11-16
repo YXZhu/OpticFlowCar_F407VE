@@ -74,6 +74,12 @@
 #define SIO_D_GPIO_Port GPIOC
 #define F_CS_Pin GPIO_PIN_0
 #define F_CS_GPIO_Port GPIOB
+#define SW_Pin GPIO_PIN_2
+#define SW_GPIO_Port GPIOB
+#define DT_Pin GPIO_PIN_7
+#define DT_GPIO_Port GPIOE
+#define CLK_Pin GPIO_PIN_8
+#define CLK_GPIO_Port GPIOE
 #define CameraLight_Pin GPIO_PIN_9
 #define CameraLight_GPIO_Port GPIOE
 #define GPIO1_3_Pin GPIO_PIN_10
@@ -102,6 +108,10 @@
 #define MOTION_EXTI_IRQn EXTI9_5_IRQn
 #define RESET_Pin GPIO_PIN_9
 #define RESET_GPIO_Port GPIOD
+#define SpeedA_G_Pin GPIO_PIN_12
+#define SpeedA_G_GPIO_Port GPIOD
+#define SpeedB_G_Pin GPIO_PIN_13
+#define SpeedB_G_GPIO_Port GPIOD
 #define PWDN_Pin GPIO_PIN_14
 #define PWDN_GPIO_Port GPIOD
 #define RESTE_Pin GPIO_PIN_15

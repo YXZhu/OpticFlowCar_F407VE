@@ -12,10 +12,16 @@
 #define debug_moto
 union n16bit angle;
 union cmd_t cmd;
+
+/* ÏµÍ³¾ä±ú¶¨Òå */
 osSemaphoreId motoctrlTx;
 osThreadId motoctrlHandle;
+osThreadId CarLogicCtrlHandle; // ³µ×ÓÂß¼­¿ØÖÆÈÎÎñ
+osMutexId mototurnMute;  //³µ×Ó×ªÍä»¥³âËø
+
 void MotoCtrlFreertosInit(void);
-static void CameraServoInit(); // ÉãÏñÍ·¶æ»ú¿ØÖÆ³õÊ¼»¯
+void CarLogicCtrlTask(void const * argument);
+static void CameraServoInit(void); // ÉãÏñÍ·¶æ»ú¿ØÖÆ³õÊ¼»¯
 CCMRAM arm_pid_instance_f32 cameraservoctrl_pid;
 #if OpticFlow_Ctrl == 1
 CCMRAM arm_pid_instance_f32 speedyctrlpid;
@@ -27,11 +33,15 @@ static void SpeedXCtrl_OpticFlow(int16_t setspeedx);
 static void SpeedYCtrl_OpticFlow_init(void);
 static void SpeedYCtrl_OpticFlow(int16_t setspeedy);
 
+int16_t spdy=400;
+int16_t spdx=400;
+
 #else
 CCMRAM arm_pid_instance_f32 speedactrlpid_tim;
 CCMRAM arm_pid_instance_f32 speedbctrlpid_tim;
 CCMRAM arm_pid_instance_f32 directionctrlpid_yaw;  // ¶æ»ú·½Ïò¿ØÖÆPID Ê¹ÓÃYAW // ³¯Ä³¸ö½Ç¶ÈÔËĞĞ
 CCMRAM arm_pid_instance_f32 straightctrlpid;  // ¹ì¼£¿ØÖÆPID //ÑØÇ½ĞĞ×ß
+CCMRAM arm_pid_instance_f32 straightspeedctrlpid;  // ¹ì¼£ËÙ¶È¿ØÖÆ 
 /* ¶æ»ú¿ØÖÆº¯Êı */
 static void DirectionCtrl_YAW(int16_t* D_angle ,uint8_t *reset);
 /* AÂÖPID¿ØÖÆº¯Êı */
@@ -42,20 +52,19 @@ static void SpeedBCtrl_Time(int8_t setspeedB);
 static void StraightCtrl(uint8_t distance);  // ¹ì¼£¿ØÖÆ ÑØÇ½×ß // Ñ­¼£
 void Moto_TimeInit(void);
 #endif
+uint8_t testmoto = 0; // testmoto
 
-int16_t spdy=400;
-int16_t spdx=400;
 
-CCMRAM int16_t angle_Turn = 0; // ³µ×ÓÔËĞĞ·½ÏòÉèÖÃ 
+CCMRAM int16_t angle_Turn = 0; // ³µ×ÓÔËĞĞ·½ÏòÉèÖÃ ¶ÈÊı
 CCMRAM uint8_t angle_TurnReset = 1; //³µ×Ó·½Ïò¸´Î» ÉèÖÃµ±Ç°½Ç¶ÈÎª0
 
 CCMRAM float speedA_Tim,speedB_Tim; // ABÂÖµ±Ç°ËÙ¶È
-
 CCMRAM int8_t spdC = 0;  // ÉèÖÃ³µ×ÓËÙ¶È // 0 ~ 120
-CCMRAM float D_errorpx = 2.5f; // ABÂÖ²îËÙÎó²î´øÈë±ÈÀı 1.8
+//CCMRAM float D_errorpx = 1.8f; // ABÂÖ²îËÙÎó²î´øÈë±ÈÀı 1.8
 
 CCMRAM uint16_t CameraServoAngleSet = 90; // ÉãÏñÍ·¶æ»ú½Ç¶ÈÉèÖÃ £º0 - 180 ¡ã
 //uint8_t cal_tim =10;
+
 void MotoCtrlFreertosInit(void)  // µç»úÇı¶¯ÈÎÎñ³õÊ¼»¯º¯Êı
 {
 #if OpticFlow_Ctrl == 0
@@ -64,24 +73,87 @@ void MotoCtrlFreertosInit(void)  // µç»úÇı¶¯ÈÎÎñ³õÊ¼»¯º¯Êı
 	 SpeedYCtrl_OpticFlow_init();
 	 SpeedXCtrl_OpticFlow_init();
 #endif	
-	CameraServoInit();
-	osThreadDef(MotoCtrlTask, MotoCtrlTask, osPriorityHigh, 0, 256);
+	//CameraServoInit();
+	
+	osThreadDef(MotoCtrlTask, MotoCtrlTask, osPriorityHigh, 0, 512);
    motoctrlHandle = osThreadCreate(osThread(MotoCtrlTask), NULL);
+	
+	/* Ğ¡³µÂß¼­¿ØÖÆÈÎÎñ */
+	osThreadDef(CarLogicCtrlTask,CarLogicCtrlTask,osPriorityAboveNormal,0,512);
+	CarLogicCtrlHandle = osThreadCreate(osThread(CarLogicCtrlTask),NULL);
 	
 	osSemaphoreDef(motoctrlTx);
 	motoctrlTx = osSemaphoreCreate(osSemaphore(motoctrlTx),1);
+	
+	osMutexDef(mototurnMute);
+	mototurnMute = osMutexCreate(osMutex(mototurnMute));
 }
 static void CameraServoInit()
 {
 	HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_4);
-	cameraservoctrl_pid.Kp = 0;
-	cameraservoctrl_pid.Ki = 0;
+	cameraservoctrl_pid.Kp = 0.2;
+	cameraservoctrl_pid.Ki = 0.007;
 	cameraservoctrl_pid.Kd = 0;
 	arm_pid_init_f32(&cameraservoctrl_pid, 1);
 }
+
+extern RESULT Resu;
+#ifdef debug_moto
+uint8_t cameradebug;
+#endif
 void CameraServoctrl()
 {
-	__HAL_TIM_SetCompare(&htim3,TIM_CHANNEL_4,LIMIT((CameraServoAngleSet*10+500),500,2300)); // 500 - 2300 ¶ÔÓ¦ 0 - 180¡ã
+	static int16_t outputerror;
+	int16_t error;
+	error = Resu.y;
+	error = 60 - error;
+	outputerror = arm_pid_f32(&cameraservoctrl_pid,error);
+	
+	CameraServoAngleSet =  90 + LIMIT(outputerror,-90,90);
+	
+	//__HAL_TIM_SetCompare(&htim3,TIM_CHANNEL_4,LIMIT((CameraServoAngleSet*10+500),500,2300)); // 500 - 2300 ¶ÔÓ¦ 0 - 180¡ã
+	
+	#ifdef debug_moto
+	if(cameradebug == 1)
+	{
+		cameradebug = 0;
+		arm_pid_init_f32(&cameraservoctrl_pid, 1);
+		
+	}
+	#endif
+	
+}
+
+void CarLogicCtrlTask(void const * argument)
+{
+	osEvent event;
+	while(motoctrlHandle == NULL) osDelay(100);
+	for(;;)
+	{	
+		event = osSignalWait(0x0f,100);
+		if(event.status == osEventSignal)
+		{
+			if(event.value.signals&0x04) // ×ªÍäÍê³ÉÊÍ·Å×ªÍä¹¦ÄÜ
+			{
+				osMutexRelease(mototurnMute);
+			}
+			if(event.value.signals&0x01)
+			{
+				StraightCtrl(13);	
+			}
+			if(event.value.signals&0x02)
+			{
+				
+			}
+		}
+		else if(event.status == osEventTimeout)
+		{
+			
+			
+		}
+		//StraightCtrl(13);	
+		//osDelay(5);
+	}
 	
 }
 void MotoCtrlTask(void const * argument)
@@ -94,7 +166,6 @@ void MotoCtrlTask(void const * argument)
 	SpeedYCtrl_OpticFlow_init();
 	SpeedXCtrl_OpticFlow_init();
 #endif
-	//MotoCtrlFreertosInit();
 	cmd.send.aa = 0xaa;  //ÉèÖÃÖ¡Í·
 	cmd.send.ed = 0xed;  //ÉèÖÃÖ¡Î²
 	angle.i = 1500; //³õÊ¼»¯Ğ¡³µ×ªÏò½Ç¶È angle£º1350 ~ 1650
@@ -106,31 +177,34 @@ void MotoCtrlTask(void const * argument)
 	for(;;)
 	{
 #if OpticFlow_Ctrl == 0	
-		if(moto_run%6 == 0)
+		if(moto_run%1 == 0)
 		{
-			StraightCtrl(13);	
+			//StraightCtrl(13);	
 		}
-		if(moto_run%10 == 0)  // Ã¿Xx5msÖ´ĞĞÒ»´Î ¸ù¾İ³µ×ÓËÙ¶Èµ÷½Ú·´Ó¦ËÙ¶È //(uint16_t)(-0.1667*spdA + 26.667) 
+		if(moto_run%2 == 0)  // Ã¿Xx5msÖ´ĞĞÒ»´Î ¸ù¾İ³µ×ÓËÙ¶Èµ÷½Ú·´Ó¦ËÙ¶È //(uint16_t)(-0.1667*spdA + 26.667) 
 		{
-			CameraServoctrl();
+			//CameraServoctrl();
 			DirectionCtrl_YAW(&angle_Turn, &angle_TurnReset);
 		}
-		if(moto_run%10 == 0)  // Ã¿10x5msÖ´ĞĞÒ»´Î
+		if(moto_run%5 == 0)  // Ã¿10x5msÖ´ĞĞÒ»´Î
 		{
 			if(angle.i != 1500) // ²îËÙ¼ÆËã
 			{
 				float error; //Îó²î
+				error = arm_pid_f32(&straightspeedctrlpid,1500 - angle.i);
+				//spdA_t = spdC + error;
+				//spdB_t = spdC - error;
+				//error= (1500.f - angle.i)/150.f;
+				//error = error / D_errorpx;
+				spdA_t = spdC*(1+LIMIT(error,-1.2f,0));
+				spdB_t = spdC*(1-LIMIT(error,0,1.2f));
 				
-				error= (1500.f - angle.i)/150.f;
-				error = error / D_errorpx;
-				spdA_t = spdC*(1+error);
-				spdB_t = spdC*(1-error);
 			}
 			SpeedACtrl_Time((int8_t)LIMIT(spdA_t,-100,100));   // ÊäÈëÏŞ·ù
 			SpeedBCtrl_Time((int8_t)LIMIT(spdB_t,-100,100));
 			
 		}
-		if(moto_run%80 == 0) // µç»ú²»×ª ×ªËÙÖÃÁã Ã¿80x5msÖ´ĞĞÒ»´Î
+		if(moto_run%80 == 0) // µç»ú²»×ª ×ªËÙÖÃÁã Ã¿60x5msÖ´ĞĞÒ»´Î
 		{
 			static float speedA_old,speedB_old;
 			if(speedA_old == speedA_Tim)
@@ -155,7 +229,7 @@ void MotoCtrlTask(void const * argument)
 //			else
 //				spdA = spdB = 10,a=1;
 		}
-		if(moto_run > 1000) moto_run = 0;
+		if(moto_run >= 1000) moto_run = 0;
 		else moto_run ++;
 #else
 		SpeedYCtrl_OpticFlow(spdy);
@@ -177,29 +251,35 @@ CCMRAM float outpida,outpidb;
 static void Moto_TimeInit(void)
 {
 	/* AÂÖPID²ÎÊı */
-	speedactrlpid_tim.Kp = 1.05;
-	speedactrlpid_tim.Ki = 0.245;
-	speedactrlpid_tim.Kd = 0.83;
+	speedactrlpid_tim.Kp = 1.05f;
+	speedactrlpid_tim.Ki = 0.245f;
+	speedactrlpid_tim.Kd = 0.83f;
 	arm_pid_init_f32(&speedactrlpid_tim, 1);
 	/* BÂÖPID²ÎÊı */
-	speedbctrlpid_tim.Kp = 1.05;  //0.358 0.45
-	speedbctrlpid_tim.Ki = 0.245; //0.0765 0.085
-	speedbctrlpid_tim.Kd = 0.83;  //0.178 0.25
+	speedbctrlpid_tim.Kp = 1.05f;  //0.358 0.45
+	speedbctrlpid_tim.Ki = 0.245f; //0.0765 0.085
+	speedbctrlpid_tim.Kd = 0.83f;  //0.178 0.25
 	arm_pid_init_f32(&speedbctrlpid_tim, 1);
 	
 	/* ¶æ»ú¿ØÖÆPID²ÎÊı */
-	directionctrlpid_yaw.Kp = 4.8; //5
+	directionctrlpid_yaw.Kp = 5.1f; //5
 	directionctrlpid_yaw.Ki = 0;
-	directionctrlpid_yaw.Kd = 2;
+	directionctrlpid_yaw.Kd = 2.f;
 	arm_pid_init_f32(&directionctrlpid_yaw, 1);
 	
 	/* ¹ì¼£¿ØÖÆPID²ÎÊı */
-	straightctrlpid.Kp = 3.85;
-	straightctrlpid.Ki = 0;
-	straightctrlpid.Kd = 0.08;
+	straightctrlpid.Kp = 3.5f;  //3.85
+	straightctrlpid.Ki = 0.006f; //0.02
+	straightctrlpid.Kd = 0.0f;  // 0.08
 	arm_pid_init_f32(&straightctrlpid, 1);	
 	
-	HAL_TIM_IC_Start_IT(&htim4,TIM_CHANNEL_1);
+	/* ¹ì¼£ËÙ¶È¿ØÖÆPID²ÎÊı */
+	straightspeedctrlpid.Kp = 0.0035f;
+	straightspeedctrlpid.Ki = 0;
+	straightspeedctrlpid.Kd = 0.00;
+	arm_pid_init_f32(&straightspeedctrlpid, 1);	
+	
+	HAL_TIM_IC_Start_IT(&htim4,TIM_CHANNEL_1); // ¿ªÆôABÂÖ²âËÙÊäÈë²¶»ñ
 	HAL_TIM_IC_Start_IT(&htim4,TIM_CHANNEL_2);
 	
 }
@@ -210,167 +290,320 @@ static void Moto_TimeInit(void)
 //#define CENTER_dis  vl53l0x_dis3  // µ¥Î»mm
 #define RunWide 40 // ÅÜµÀ¿í¶È µ¥Î»cm
 
-uint16_t MaxRunDis = 20; //¿ªÆô¹ì¼£¿ØÖÆËã·¨×óÓÒ×î´ó¾àÀë µ¥Î»cm
+uint16_t MaxRunDis = 35; //¿ªÆô¹ì¼£¿ØÖÆËã·¨×óÓÒ×î´ó¾àÀë µ¥Î»cm
 uint16_t FMinRunDis = 40; //¿ªÆô¹ì¼£¿ØÖÆËã·¨Ç°·½×îĞ¡¾àÀë
 float DisError;   // Á½´«¸ĞÆ÷¾àÅÜµÀ±ßÔµÎó²î µ¥Î»cm
 /* ¹ì¼£¿ØÖÆº¯Êı */  
 // ×óÓÒ´«¸ĞÆ÷¼ä¸ô 14cm ÅÜµÀ¿í¶È 40cm 40-14 26 13  //
 
-static union flag_t StraightCtrlFlag;
+union flag_t StraightCtrlFlag;
 #define SaveOldAngleFlag StraightCtrlFlag.flag0
 #define SaveOldSpdCFlag StraightCtrlFlag.flag1
 #define StartRunFlag StraightCtrlFlag.flag2
 #define StartTrunFlag StraightCtrlFlag.flag3  // StartTrunFlag = 0 Î´×ªÍä 1 ÕıÔÚ×ªÍä
+#define UnlockMutexFlag StraightCtrlFlag.flag4 
+#define TestStop StraightCtrlFlag.flag5
+//#define TrunError // ¿ªÆô×ªÍä´íÎóĞ£Õı
 int16_t outpidangle;   // PD ½Ç¶ÈĞ£ÕıÎó²î //Íù×ó¿¿ÎªÕı ÍùÓÒ¿¿Îª¸º
-float pxs = 0.35f;
+CCMRAM float pxs = 0.8f;
+int16_t outpidspeed;  //¹ì¼£ËÙ¶ÈÊä³ö PID
 
-uint16_t LEFT_dis,RIGHT_dis,CENTER_dis;  // ¾àÀëÊıÖµÕûĞÎ ÓÃÓÚ±È½Ï
-float LEFT_disf,RIGHT_disf,CENTER_disf;  // µÍÍ¨ÂË²¨ºó¾àÀëÊıÖµ×ªÎªÀåÃ×
-float LEFT_disL ,RIGHT_disL,CENTER_disL; // µÍÍ¨ÂË²¨ºó¾àÀëÊıÖµ Ô¤¸³Öµ±ÜÃâËã·¨ºóÃæÎóÅĞ
-int16_t angle_Turn_old;
+int16_t LEFT_dis,RIGHT_dis,CENTER_dis;  // ¾àÀëÊıÖµÕûĞÎ ÓÃÓÚ±È½Ï
+CCMRAM float LEFT_disf,RIGHT_disf,CENTER_disf;  // µÍÍ¨ÂË²¨ºó¾àÀëÊıÖµ×ªÎªÀåÃ×
+CCMRAM float LEFT_disL ,RIGHT_disL,CENTER_disL; // µÍÍ¨ÂË²¨ºó¾àÀëÊıÖµ Ô¤¸³Öµ±ÜÃâËã·¨ºóÃæÎóÅĞ
+CCMRAM float angle_Turn_old;
+//CCMRAM float testaa;
+//extern osMessageQId VL53L0XDisMess;
+//extern osPoolId VL53L0XDisPool;
+int16_t spdC_old; 
+uint8_t TurnNum = 0;  // ¼ÇÂ¼×ªÍä´ÎÊı
+CCMRAM float anglecaltmp;
+
 static void StraightCtrl(uint8_t distance)  // ¹ì¼£¿ØÖÆ ÑØÇ½×ß // Ñ­¼£
 {
-	static int16_t spdC_old;
+	//static int16_t spdC_old;
+	static int8_t direction = 0;  // >0 ÓÒ×ª <0 ×ó×ª
+	//static 
+	static uint32_t timeTurn = 0; // ¼ÇÂ¼×ªÍäÊ±¼ä
+	static uint16_t timeSaveAngle; // ¼ÇÂ¼±£´æµ±Ç°½Ç¶ÈĞèÒªµÈ´ıµÄÊ±¼ä
+	
 	/* µÍÍ¨ÂË²¨´¦Àí */
 	LEFT_disL += (VL53L0XRangingMeasurementData[VL53L0X_DEV_LEFT].RangeMilliMeter - LEFT_disL)*pxs;
 	RIGHT_disL += (VL53L0XRangingMeasurementData[VL53L0X_DEV_RIGHT].RangeMilliMeter - RIGHT_disL)*pxs;
 	CENTER_disL = vl53l0x_dis3;
 	
 	/* ×ªÀåÃ× */ 
-	LEFT_disf = LEFT_disL/10.f;  
-	RIGHT_disf = RIGHT_disL/10.f;  
+	LEFT_disf = LEFT_disL/10.f;//(LEFT_disL)*arm_cos_f32((HeadingDegrees - angle_Turn_old)*0.0174532925f)/10.f;  // ¼ÓÈëÍÓÂİÒÇ½Ç¶ÈĞ£Õı »¡¶ÈÖÆ
+	arm_abs_f32(&LEFT_disf,&LEFT_disf,1);
+	RIGHT_disf = RIGHT_disL/10.f;//RIGHT_disL*arm_cos_f32((angle_Turn_old - HeadingDegrees)*0.0174532925f)/10.f;  
+	arm_abs_f32(&RIGHT_disf,&RIGHT_disf,1);
 	CENTER_disf = CENTER_disL/10.f;
 
 	/* ×ªÎªÕûĞÎ ºÃÅĞ¶Ï */
 	LEFT_dis =  LEFT_disf;
 	RIGHT_dis = RIGHT_disf;
 	CENTER_dis = CENTER_disf;
-	
+
 	if(SaveOldAngleFlag == 0) // ±£´æÖ®Ç°µÄµÄ½Ç¶È½øĞĞ½Ç¶ÈĞ£Õı
 	{
-//		LEFT_disL = VL53L0XRangingMeasurementData[VL53L0X_DEV_LEFT].RangeMilliMeter; // ¸³³õÖµ
-//		RIGHT_disL = VL53L0XRangingMeasurementData[VL53L0X_DEV_RIGHT].RangeMilliMeter;
-//		CENTER_disL = vl53l0x_dis3;
-
-		SaveOldAngleFlag = 1;
-		angle_Turn_old = angle_Turn;
-		return; // Ìø³öº¯Êı ²»Ö´ĞĞÏÂÃæ Ê¹Êı¾İÎÈ¶¨
+		SaveOldAngleFlag = 1;	
+		angle_Turn_old = HeadingDegrees;
 	}
 	if(SaveOldSpdCFlag == 0)
 	{
-		//StartRunFlag = 1;
 		SaveOldSpdCFlag = 1;
 		spdC_old = spdC;
-		return; // Ìø³öº¯Êı ²»Ö´ĞĞÏÂÃæ Ê¹Êı¾İÎÈ¶¨
+		osMutexWait(mototurnMute,0);
 	}
 	
+	#ifdef debug_moto
+	if(TestStop)
+	{
+		TestStop = 0;
+		spdC = 0;
+		spdC_old = 0;
+	}
+							//spdC = 40;  // ÉèÖÃËÙ¶ÈÎª40cm/s¹ıÍä
+	#endif
 	if(LEFT_dis < MaxRunDis || RIGHT_dis < MaxRunDis || CENTER_dis < FMinRunDis)  // ·ûºÏ¹ì¼£Ëã·¨
 	{
-		MaxRunDis = 40;
-		#ifndef debug_moto 
+		//MaxRunDis = 20;
+		
 		if(!StartTrunFlag)  // µ±StartTrunFlag = 0Ê± Î´×ªÍä Ä¬ÈÏËÙ¶ÈĞĞÊ»
-			spdC = spdC_old;
-		#endif
+		{
+			direction = 0;
+			//spdC = spdC_old;
+		}
+		
 		if(LEFT_dis < MaxRunDis)
 		{ 
 			if(RIGHT_dis < MaxRunDis)  // ×ó±ßĞ¡ÓÚMaxRunDis ÓÒ±ßĞ¡ÓÚMaxRunDis Ö±Ïß Ö±×ß
 			{
-				DisError = (LEFT_disf - RIGHT_disf)/2.f;  // Ê¹³µ×ÓÎ»ÓÚÅÜµÀÖĞ¼ä
+				if(direction == 0)
+				{
+					DisError = (LEFT_disf - RIGHT_disf)/2.f;  // Ê¹³µ×ÓÎ»ÓÚÅÜµÀÖĞ¼ä
+				}
+				else if(direction < 0)
+					DisError = LEFT_disf - distance;  // ×ó×ªÍä
+				else
+					DisError = distance - RIGHT_disf;
 				if(CENTER_dis < FMinRunDis) // Á½±ßĞ¡ÓÚÔ¤ÉèÖµ Ç°ÃæĞ¡ÓÚÔ¤ÉèÖµ
 				{
-					if(!StartTrunFlag)
-					{
-						static uint32_t timeTurn = 0;
-						static uint8_t TurnNum = 0; // ¼ÇÂ¼×ªÍä´ÎÊı
-						if((HAL_GetTick() - timeTurn) > 2000)
-						{
-							TurnNum ++;
-							StartTrunFlag = 1;
-							StartRunFlag = 1; // ×ß¹ı
-							//#define Turnangle 90
-							if(TurnNum == 3 || TurnNum == 5 || TurnNum == 8)
-								angle_Turn_old = angle_Turn_old - 90;
-							else angle_Turn_old = angle_Turn_old + 90;
-							#ifndef debug_moto 
-								spdC = 60;
-							#endif
-							timeTurn = HAL_GetTick();
-						}
-						
-					}
+
 				}
 			}
 			else  // ×ó±ßĞ¡ÓÚMaxRunDis ÓÒ±ß´óÓÚMaxRunDis ¿ÉÄÜÓĞÂ· ¿ìÅÜ
 			{
+				if(direction<=0) // ÓÒ×ªÍäÊ±²»Ê¹ÄÜ×ó±ßĞ£Õı
 				DisError = LEFT_disf - distance;
 					//StartTrunFlag = 0;
 				if(CENTER_dis > FMinRunDis)
 				{
-					if((!StartTrunFlag) && StartRunFlag)  // ×ªÍä ×ªÍäÊ¹ÄÜ StartRunFlag = 1
+					// ÍäµÀ¼ÆÊı
+					if(TurnNum == 2 ||
+					   TurnNum == 6 )		
 					{
-						StartTrunFlag = 1;
-						angle_Turn_old = angle_Turn_old + 90;
-						#ifndef debug_moto
-						spdC = 40;  // ÉèÖÃËÙ¶ÈÎª40cm/s¹ıÍä
-						#endif
+						//if((!StartTrunFlag) && StartRunFlag &&(!TrunErrorFlag))  // ×ªÍä ×ªÍäÊ¹ÄÜ StartRunFlag = 1
+						if(osMutexWait(mototurnMute,0) == osOK)
+						{
+							StartTrunFlag = 1;
+							TurnNum ++;
+							angle_Turn_old = angle_Turn_old + 90;
+							direction = 1;
+							#ifndef debug_moto
+							//spdC = 40;  // ÉèÖÃËÙ¶ÈÎª40cm/s¹ıÍä
+							#endif
+						}
 					}
-				}			
+				}
+				else
+				{
+					// ÍäµÀ¼ÆÊı
+					if(TurnNum == 0 ||
+					   TurnNum == 1 ||
+						TurnNum == 10 )		
+					{
+						if(!StartRunFlag)
+						{
+							StartRunFlag = 1;
+							osMutexRelease(mototurnMute);
+						}
+						//if(TurnNum<11)
+						//if(!StartTrunFlag &&(!TrunErrorFlag))
+						if(osMutexWait(mototurnMute,0) == osOK)
+						{						
+							//static uint8_t TurnNum = 0; // ¼ÇÂ¼×ªÍä´ÎÊı
+							if((HAL_GetTick() - timeTurn) > 1000)
+							{
+								TurnNum ++;
+								StartTrunFlag = 1;
+								StartRunFlag = 1; // ×ß¹ı
+								//#define Turnangle 90
+								//if(TurnNum == 2 )
+									//spdC = 60;
+									angle_Turn_old = angle_Turn_old + 90,direction = 1;
+								#ifndef debug_moto 
+									//spdC = 60;
+								#endif
+								timeTurn = HAL_GetTick();
+							}
+						}
+					}
+				}					
 			}
-//				if(CENTER_dis < FMinRunDis)
-//				{
-//					if(StartTrunFlag == 0)
-//					{
-//						StartTrunFlag = 1;
-//						#define Turnangle 90
-//						if(angle_Turn_old < 360) angle_Turn_old = angle_Turn_old + 90;
-//						else angle_Turn_old = angle_Turn_old - 360;
-//					}
-//				}
 		}
 		else  // ×ó±ß´óÓÚMaxRunDis¿ÉÄÜÓĞÂ· ¿ìÅÜ
 		{
 			if(RIGHT_dis < MaxRunDis)  // ×ó±ß´óÓÚMaxRunDis ÓÒ±ßĞ¡ÓÚMaxRunDis
 			{
+				if(direction>=0) // ×ó×ªÍäÊ±²»Ê¹ÄÜÓÒ±ßĞ£Õı
 				DisError = distance - RIGHT_disf;
 				if(CENTER_dis > FMinRunDis)  // Ç°Ãæ´óÓÚFMinRunDis
 				{
-					if((!StartTrunFlag) && StartRunFlag)  // ×ªÍä ×ªÍäÊ¹ÄÜ StartRunFlag = 1
+					// ÍäµÀ¼ÆÊı
+					if(TurnNum == 4 ||
+					   TurnNum == 8 )		
 					{
-						StartTrunFlag = 1;
-						angle_Turn_old = angle_Turn_old - 90;
-						#ifndef debug_moto
-						spdC = 40;  // ÉèÖÃËÙ¶ÈÎª40cm/s¹ıÍä
-						#endif
+						//if((!StartTrunFlag) && StartRunFlag &&(!TrunErrorFlag))  // ×ªÍä ×ªÍäÊ¹ÄÜ StartRunFlag = 1
+						if(osMutexWait(mototurnMute,0) == osOK)
+						{
+							if((HAL_GetTick() - timeTurn) > 1000)
+							{
+								StartTrunFlag = 1;
+								TurnNum ++;
+								angle_Turn_old = angle_Turn_old - 90;
+								direction = -1;
+								#ifndef debug_moto
+								//spdC = 40;  // ÉèÖÃËÙ¶ÈÎª40cm/s¹ıÍä
+								#endif
+								timeTurn = HAL_GetTick();
+							}
+						}
 					}
 				}
 			}
 			else  // ×óÓÒÁ½±ß´óÓÚMaxRunDis ¿ÉÄÜ  Óöµ½·Ö²æ¿Ú 
 			{
-				return;
+				 DisError = 0; //Îó²îÇåÁã
+				arm_pid_reset_f32(&straightctrlpid);
+				// ÍäµÀ¼ÆÊı
+				if(TurnNum == 3 ||
+					TurnNum == 5 ||
+					TurnNum == 7 ||
+					TurnNum == 9 ||
+					TurnNum == 11 )		
+				{
+					//if(!StartTrunFlag &&  StartRunFlag && (!TrunErrorFlag))
+					if(osMutexWait(mototurnMute,0) == osOK)
+					{
+						//static uint32_t timeTurn = 0;
+						if((HAL_GetTick() - timeTurn) > 1000)
+						{
+							
+							StartTrunFlag = 1;
+							if(TurnNum == 3 || TurnNum == 7 || TurnNum == 11)
+								angle_Turn_old = angle_Turn_old - 90,direction = -1; // ×ó
+							else
+								angle_Turn_old = angle_Turn_old + 90,direction = 1;
+							#ifndef debug_moto 
+								//spdC = 60;
+							#endif
+							timeTurn = HAL_GetTick();
+							TurnNum ++;
+						}
+					}
+				}
+				//return;
 			}
 		}
-//		if(CENTER_dis < FMinRunDis)
-//		{
-//			if(StartTrunFlag == 0)
+		
+		if(ABS(DisError)<0.5f)
+		{
+			timeSaveAngle ++;  //³ÌĞò5msÖ´ĞĞÒ»´Î
+			if(timeSaveAngle == 100) // Èç¹û×ßÖ±ÏßÊ±¼ä³¬¹ı1.5Ãë
+			{
+				timeSaveAngle = 0;
+				if(StartTrunFlag != 1)
+				{
+					//angle_TurnReset = 1;
+					angle_Turn_old = HeadingDegrees;
+				}
+				//SaveOldAngleFlag = 0; // °Ñµ±Ç°½Ç¶ÈÉèÖÃÎªÄ¬ÈÏ½Ç
+			}
+			
+		}
+		else 
+		{
+//			static float HeadingDegrees_t,temp;
+//			if(HeadingDegrees_t > HeadingDegrees)
 //			{
-//				StartTrunFlag = 1;
-//				StartRunFlag = 1; // ×ß¹ı
-//				#define Turnangle 90
-//				//angle_Turn_old = angle_Turn_old + 90;
+//				temp =  ;
+//			}
+//			else
+//			{
+//				
+//			}
+//			HeadingDegrees_t = HeadingDegrees;
+			timeSaveAngle = 0;
+			
+		}
+		
+
+		
+		//if(ABS(outpidangle)<40)
+			outpidangle = arm_pid_f32(&straightctrlpid,DisError);
+//		else
+//		{
+//			if(ABS(DisError)<1.5f)
+//			{
+//				outpidangle = 0;
+//				arm_pid_reset_f32(&straightctrlpid);
 //			}
 //		}
+		
+		if(sbug == 1)
+		{
+			sbug = 0;
+			arm_pid_init_f32(&straightctrlpid,1);
+		}
+		else if(sbug == 2)
+		{
+			//dbug = 0;
+			outpidangle  = 0;
+			arm_pid_reset_f32(&straightctrlpid);
+		}
+	
 		if(angle_Turn_old >= 360) angle_Turn_old = angle_Turn_old - 360;
 		else if(angle_Turn_old < 0) angle_Turn_old = angle_Turn_old + 360;
-		outpidangle = arm_pid_f32(&straightctrlpid,DisError);
-		angle_Turn = angle_Turn_old - LIMIT(outpidangle,-45,45);
+		
+		angle_Turn = angle_Turn_old - LIMIT(outpidangle,-30,30);
+		//static int8_t speed;
+		
+		/* Ô¤¼õËÙ */ 
+		if(CENTER_dis < (FMinRunDis + 40) || TurnNum == 2 || TurnNum == 4 || TurnNum == 6 || TurnNum == 8 || TurnNum == 12)  // Ô¤¼õËÙ
+		{				
+			//outpidspeed = arm_pid_f32(&straightspeedctrlpid,40 - CENTER_dis);
+			if(CENTER_dis < FMinRunDis-10)
+			{
+				//spdC = spdC_old;
+			}
+			else
+				spdC = LIMIT((spdC_old*CENTER_disf/100.f),20,45);
+		}	
+		else spdC = spdC_old;
 	}
-	else // Èı¸ö¾àÀë¶¼²»·ûºÏ 
+	
+	else //if(LEFT_dis > MaxRunDis && RIGHT_dis > MaxRunDis && CENTER_dis > FMinRunDis)// Èı¸ö¾àÀë¶¼²»·ûºÏ 
 	{
-		if(StartRunFlag == 1)  // ¿ÉÄÜ×ß³öÅÜµÀ //ÒÑ¾­¿ªÊ¼
+		if(StartRunFlag == 1&& TurnNum == 12)  // ¿ÉÄÜ×ß³öÅÜµÀ //ÒÑ¾­¿ªÊ¼
 		{
 			static uint16_t endtime;
 			//spdC = 30;
-			if(endtime>10) spdC = 0; //10 * ÔËĞĞÊ±¼ä msºóÍ£³µ
+			if(endtime>100) 
+			{
+				spdC = 0; //10 * ÔËĞĞÊ±¼ä msºóÍ£³µ
+				spdC_old = 0;
+			}
 			else endtime ++;
 				
 		}
@@ -380,18 +613,25 @@ static void StraightCtrl(uint8_t distance)  // ¹ì¼£¿ØÖÆ ÑØÇ½×ß // Ñ­¼£
 			spdC = 40;  // ÉèÖÃËÙ¶ÈÎª40cm/s¹ıÍä
 			#endif	
 		}
-		//spdC = 30;
-		angle_Turn = 0;
+		spdC = 30;
+		LEFT_disL = 300;
+		RIGHT_disL = 500;
+		//angle_Turn = 0;
 		//outpidangle = 0;
 		DisError = 0; //¸´Î»²ÎÊı
 		return;
 	}
 
-	if(dbug == 1)
-	{
-		dbug = 0;
-		arm_pid_init_f32(&straightctrlpid,1);
-	}
+//	if(sbug == 1)
+//	{
+//		dbug = 0;
+//		arm_pid_init_f32(&straightctrlpid,1);
+//	}
+//	else if(sbug == 2)
+//	{
+//		//dbug = 0;
+//		arm_pid_reset_f32(&straightctrlpid);
+//	}
 }
 	//uint8_t pd = 1; 
 /* ¶æ»ú¿ØÖÆº¯Êı */	float HeadingDegrees_new;
@@ -405,6 +645,7 @@ static void DirectionCtrl_YAW(int16_t *D_angle ,uint8_t *reset) // D_angle£º ½Ç¶
 	{
 		dbug = 0;
 		arm_pid_init_f32(&directionctrlpid_yaw,1);
+		arm_pid_init_f32(&straightspeedctrlpid, 1);
 	}
 	
 	//if(ABS(outpid) >180 ) // ³¬µ÷¸´Î»
@@ -440,25 +681,34 @@ static void DirectionCtrl_YAW(int16_t *D_angle ,uint8_t *reset) // D_angle£º ½Ç¶
 	if(seterror < -180 ) seterror = 360 + seterror;	
 	else if(seterror > 180 ) seterror = -360 + seterror;
 		
-	 outpid = arm_pid_f32(&directionctrlpid_yaw,seterror);  //PD¿ØÖÆ ¹ıµ÷²»Ëã  if(ABS(outpid) <= 150)
+   outpid = arm_pid_f32(&directionctrlpid_yaw,seterror);  //PD¿ØÖÆ ¹ıµ÷²»Ëã  if(ABS(outpid) <= 150)
 	
 	arm_abs_f32(&seterror,&seterrorT,1);  // È¡¾ø¶ÔÖµÅĞ¶Ï ÊÇ·ñ´ïµ½Ä¿±ê½Ç¶È ±ØĞë·ÅÔÚºóÃæ Ç°Ãæ¼ÆËãseterror
-	if(seterrorT < 4) 
+	if(seterrorT < 2) 
 	{
+		if(StartRunFlag&&StartTrunFlag)
+		{
+			StartTrunFlag = 0;
+			osSignalSet(CarLogicCtrlHandle,0x04);
+			//UnlockMutexFlag = 1;
+			//osMutexRelease(mototurnMute);
+		}
 		// Ğ´Èëµ½´ïÔ¤¶¨½Ç¶ÈÊ±µÄĞŞ¸Ä±äÁ¿
-		StartTrunFlag = 0;
+		
 	}
-//	if(ABS(outpid) > 150)  // ¹ıµ÷ÇÒ´ïµ½Ä¿±ê ¸´Î»PD¿ØÖÆ
+	//if(ABS(outpid) > 150)  // ¹ıµ÷ÇÒ´ïµ½Ä¿±ê ¸´Î»PD¿ØÖÆ
 //	{
 //		arm_abs_f32(&seterror,&seterror,1);  // ÒÑ²»ÔÙ´øÈëPDº¯Êı£¬ È¡¾ø¶ÔÖµºÃÅĞ¶Ï
-//		if(seterror < 5) 
-//		{
-//			arm_pid_reset_f32(&directionctrlpid_yaw);
-//			outpid = 0;
-//		}
-//	}
-	angle.i = LIMIT(1500 - outpid,1300,1700);
-	
+	//	if(seterrorT < 5) 
+	//	{
+	//		arm_pid_reset_f32(&directionctrlpid_yaw);
+	//		outpid = 0;
+	//	}
+	//}
+	if(spdC >= 0)
+		angle.i = LIMIT(1500 - outpid,1300,1700);
+	else
+		angle.i = LIMIT(1500 + outpid,1300,1700);
 }
 
 /* AÂÖPID¿ØÖÆº¯Êı */

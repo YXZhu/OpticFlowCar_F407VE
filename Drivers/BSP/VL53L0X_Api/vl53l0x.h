@@ -47,6 +47,14 @@ typedef enum {
 #define Thresh_Low  60
 #define Thresh_High 150
 
+/* 消息队列传输距离数值结构体 */
+typedef struct
+{
+	uint16_t dis1;
+	uint16_t dis2;
+	uint16_t dis3;
+}vl53l0x_dis_t;
+
 //中断模式参数结构体
 typedef struct 
 {

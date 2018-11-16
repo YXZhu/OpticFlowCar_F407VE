@@ -68,6 +68,7 @@
 #include "DIALOG.h"
 #include "DataDisplayDLG.h"
 #include "EasyTracer.h"
+#include "servoctrl.h"
 //#include "picture.c"
 /* USER CODE END Includes */
 
@@ -104,7 +105,7 @@ osThreadId startTaskHandle;
 extern uint16_t ov7670Frame[160][120];
 CCMRAM uint16_t ov7670FrameL[160][120];
 RESULT Resu;
-TARGET_CONDI Condition={10,67,100,255,63,195,20,20,120,160};  //»ÆÉ«
+TARGET_CONDI Condition={40,60,130,235,155,230,45,45,160,160};  //»ÆÉ«  {10,67,100,255,63,195,20,20,120,160};{40,60,130,235,155,230,20,20,120,160};
 void exchangframelb(uint8_t *B,uint8_t *L,uint32_t num)
 {
 	for(uint32_t i = 0;i<num;i++)
@@ -151,6 +152,7 @@ void MX_FREERTOS_Init(void) {
 	MPU9250FreertosInit();
 	//vl53l0xFreertosInit();
 	MotoCtrlFreertosInit();
+	ServoCtrlFreertosInit();
   /* USER CODE END Init */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -295,7 +297,7 @@ void StartTask(void const * argument)
 				  GUI_DrawBitmap(&camera,4,0);
 					//GUI_SelectLayer(1);
 				  //IMAGE_SetBitmap(hcamera,&camera);
-				 GUI_Delay(10);  //ÑÓ³ÙË¢ÆÁ 
+				 GUI_Delay(5);  //ÑÓ³ÙË¢ÆÁ 
 				  //HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)ov7670Frame, 0x2580);
 			  }
 			  else if(SwDis == 0)
@@ -310,7 +312,7 @@ void StartTask(void const * argument)
 				  TEXT_SetText(hcenterdis,temp);
 				  sprintf(temp,"%d,X:%d,Y:%d",MotionBurst.squal,(int16_t)pmw3901LpfX,(int16_t)pmw3901LpfY);
 				  TEXT_SetText(hrightdis,temp);
-				  GUI_Delay(100);
+				  GUI_Delay(5);
 			  }
 			  else
 			  {
@@ -356,26 +358,39 @@ void StartTask(void const * argument)
 		  }
 		  else if(!HAL_GPIO_ReadPin(KEY1_GPIO_Port,KEY1_Pin))	
 		  {
-			  uint8_t switchlight;
-				 GUI_Delay(200);
-				 if(!HAL_GPIO_ReadPin(KEY1_GPIO_Port,KEY1_Pin))
-				 {
-					 switchlight = lightC;
+			  static uint8_t switchlight;
+				 //GUI_Delay(200);
+				if(!HAL_GPIO_ReadPin(KEY1_GPIO_Port,KEY1_Pin)) switchlight++;
+//				if(switchlight > 20)
+//				{
+//					lightC = 0;
+//					switchlight = 0;	
+//				}					
+				if(switchlight < 10 && switchlight>1)
+				{
+					switchlight = 0;
 					lightC +=10;
-					 if(lightC > 100) lightC = 10;
-				 }
-				 else	
-				 {
-					 if(!switchlight)
-					 lightC = 0;
-					 else 
-					 {
-						 //lightC = switchlight;
-						 switchlight = 0;
-					 }
-				 }						 
+					if(lightC > 100) lightC = 0;
+				}
+//				 if(!HAL_GPIO_ReadPin(KEY1_GPIO_Port,KEY1_Pin))
+//				 {
+//					 switchlight = lightC;
+//					lightC +=10;
+//					 if(lightC > 100) lightC = 10;
+//				 }
+//				 else	
+//				 {
+//					 if(!switchlight)
+//					 lightC = 0;
+//					 else 
+//					 {
+//						 //lightC = switchlight;
+//						 switchlight = 0;
+//					 }
+//				 }						 
 				 ov7670_drv.CameraLight_Set(lightC);
-		  }			  
+		  }
+			
 			
 	  }
 	  else if(StartTaskEvent.status == osEventTimeout)

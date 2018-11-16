@@ -3,6 +3,10 @@
 #define Delay HAL_Delay
 
 osThreadId VL53L0XHandle;
+//osMessageQId VL53L0XDisMess;
+//osMessageQId VL53L0XDisCenter;
+//osMessageQId VL53L0XDisRight;
+//osPoolId VL53L0XDisPool;
 //osMutexId VL53L0XMutex;  //i2c vl53l0x 互斥信号量
 //#pragma arm section zidata = "ram" 
 VL53L0X_Dev_t VL53L0XDevs[]={
@@ -37,6 +41,17 @@ void vl53l0xFreertosInit(void) // vl53l0x 任务初始化
 	//vl53l0x_adjust(&VL53L0XDevs[VL53L0X_DEV_LEFT]);
 	//osMutexDef(VL53L0XMutex);
 	//VL53L0XMutex = osMutexCreate(osMutex(VL53L0XMutex));
+	//osMessageQDef(VL53L0XDisMess,10,vl53l0x_dis_t);
+	//VL53L0XDisMess = osMessageCreate(osMessageQ(VL53L0XDisMess),NULL);
+//	
+//	osMessageQDef(VL53L0XDisCenter,5,VL53L0X_RangingMeasurementData_t);	
+//	VL53L0XDisLeft = osMessageCreate(osMessageQ(VL53L0XDisLeft),NULL);
+//	
+//	osMessageQDef(VL53L0XDisRight,5,VL53L0X_RangingMeasurementData_t);
+//	VL53L0XDisLeft = osMessageCreate(osMessageQ(VL53L0XDisLeft),NULL);
+	
+	//osPoolDef(VL53L0XDisPool,10,vl53l0x_dis_t);
+	//VL53L0XDisPool = osPoolCreate(osPool(VL53L0XDisPool));
 	
 	osThreadDef(VL53L0XTask, VL53L0XTask, osPriorityRealtime, 0, 256);
    VL53L0XHandle = osThreadCreate(osThread(VL53L0XTask), NULL); 
@@ -46,6 +61,7 @@ void vl53l0xFreertosInit(void) // vl53l0x 任务初始化
 *	 osSignal == 0x02 vl53l0x_2 GPIO1_2 中断读取信号
 *	 osSignal == 0x04 vl53l0x_3 GPIO1_3 中断读取信号
 */
+//extern float LEFT_disL ,RIGHT_disL,CENTER_disL; // 低通滤波后距离数值 预赋值避免算法后面误判
 void VL53L0XTask(void const * argument)
 {
 	
@@ -55,10 +71,12 @@ void VL53L0XTask(void const * argument)
 	VL53L0X_StartMeasurement(&VL53L0XDevs[VL53L0X_DEV_RIGHT]);// 启动测量
 	vl53l0x_uart_rec();  // 启动串口l53l0x测量
 	uint8_t time[3];
+	//vl53l0x_dis_t *disSend;
+	extern osThreadId CarLogicCtrlHandle; // 车子逻辑控制任务
 	for(;;)
 	{	
 		
-		vl53l0xEvent = osSignalWait(0x0F,100);
+		vl53l0xEvent = osSignalWait(0x0F,50);
 		if(vl53l0xEvent.status == osEventSignal)
 		{
 			if(vl53l0xEvent.value.signals&0x01)
@@ -66,6 +84,8 @@ void VL53L0XTask(void const * argument)
 				VL53L0X_GetRangingMeasurementData(&VL53L0XDevs[VL53L0X_DEV_LEFT],&VL53L0XRangingMeasurementData[VL53L0X_DEV_LEFT]);//获取测量距离,并且显示距离
 				VL53L0X_ClearInterruptMask(&VL53L0XDevs[VL53L0X_DEV_LEFT],0);//清除VL53L0X中断标志位 
 				time[VL53L0X_DEV_LEFT] = 0;
+				//LEFT_disL += (VL53L0XRangingMeasurementData[VL53L0X_DEV_LEFT].RangeMilliMeter - LEFT_disL)*0.35f;
+				
 				//debug_printf("d: %3d mm\r\n",VL53L0XRangingMeasurementData[VL53L0X_DEV_LEFT].RangeMilliMeter);
 			}
 			if(vl53l0xEvent.value.signals&0x02)
@@ -76,6 +96,7 @@ void VL53L0XTask(void const * argument)
 			}
 			if(vl53l0xEvent.value.signals&0x04)
 			{
+				//RIGHT_disL += (VL53L0XRangingMeasurementData[VL53L0X_DEV_RIGHT].RangeMilliMeter - RIGHT_disL)*0.35f;
 				VL53L0X_GetRangingMeasurementData(&VL53L0XDevs[VL53L0X_DEV_RIGHT],&VL53L0XRangingMeasurementData[VL53L0X_DEV_RIGHT]);//获取测量距离,并且显示距离
 				VL53L0X_ClearInterruptMask(&VL53L0XDevs[VL53L0X_DEV_RIGHT],0);//清除VL53L0X中断标志位 
 				time[VL53L0X_DEV_RIGHT] = 0;
@@ -98,18 +119,25 @@ void VL53L0XTask(void const * argument)
 				VL53L0XRangingMeasurementData[VL53L0X_DEV_RIGHT].RangeMilliMeter = 2500; 
 			}
 			else time[VL53L0X_DEV_RIGHT]++;
+			osSignalSet(CarLogicCtrlHandle,0x01);
 		}	
 		else if(vl53l0xEvent.status == osEventTimeout)
-		{
+		{			
 			VL53L0XRangingMeasurementData[VL53L0X_DEV_LEFT].RangeMilliMeter = 2500; 
 			VL53L0XRangingMeasurementData[VL53L0X_DEV_CENTER].RangeMilliMeter = 2500; 
 			VL53L0XRangingMeasurementData[VL53L0X_DEV_RIGHT].RangeMilliMeter = 2500;
+			osSignalSet(CarLogicCtrlHandle,0x02);
 			memset(time,0,sizeof(time));			
 			//VL53L0X_ClearInterruptMask(&VL53L0XDevs[VL53L0X_DEV_LEFT],0);//清除VL53L0X中断标志位 
 			//VL53L0X_ClearInterruptMask(&VL53L0XDevs[VL53L0X_DEV_CENTER],0);//清除VL53L0X中断标志位 
 			//VL53L0X_ClearInterruptMask(&VL53L0XDevs[VL53L0X_DEV_RIGHT],0);//清除VL53L0X中断标志位 
 			 //HAL_GPIO_TogglePin(D3_GPIO_Port,D3_Pin);
 		}
+//		disSend = osPoolAlloc(VL53L0XDisPool);
+//		disSend->dis1 = VL53L0XRangingMeasurementData[VL53L0X_DEV_LEFT].RangeMilliMeter;
+//		disSend->dis2 = vl53l0x_dis3;
+//		disSend->dis3 = VL53L0XRangingMeasurementData[VL53L0X_DEV_RIGHT].RangeMilliMeter;
+//		osMessagePut(VL53L0XDisMess,(uint32_t)disSend,1);
 		//osDelay(100);
 	}
 }
@@ -132,6 +160,7 @@ void vl53l0x_uart_rec()
 		{
 			vl53l0x_dis3 = vl53l0x_rec.vl53l0x_3.dis_h<<8|vl53l0x_rec.vl53l0x_3.dis_l;
 			vl53l0x_dis3 = vl53l0x_dis3*10; //单位转为MM
+			//osSignalSet(VL53L0XHandle,0x08);
 		}	
 	}
 	//HAL_UART_Abort_IT(&huart2);

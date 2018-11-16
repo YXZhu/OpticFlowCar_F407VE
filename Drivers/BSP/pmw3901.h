@@ -42,7 +42,7 @@ typedef __packed struct motionBurst_s  // __packed ¸æËß±àÒëÆ÷°´ÕÕ½á¹¹ÌåÊı¾İ¶¨Òå´
 extern osThreadId pmw3901Handle;
 extern float pmw3901LpfX, pmw3901LpfY;	/*ÀÛ»ıÏñËØµÍÍ¨*/
 extern MotionBurst_t MotionBurst;
-//extern osSemaphoreId pmw3901ReadIT;
+extern osSemaphoreId pmw3901ReadIT;
 void PMW3901FreertosInit(void);
 void pmw3901_run(void);
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi);

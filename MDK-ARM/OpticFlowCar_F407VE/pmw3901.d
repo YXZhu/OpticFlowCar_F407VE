@@ -63,3 +63,4 @@ opticflowcar_f407ve\pmw3901.o: ..\Drivers\BSP\motoctrl.h
 opticflowcar_f407ve\pmw3901.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h
 opticflowcar_f407ve\pmw3901.o: ../Inc/usart.h
 opticflowcar_f407ve\pmw3901.o: ../Inc/tim.h
+opticflowcar_f407ve\pmw3901.o: ..\Middlewares\Third_Party\Easytracer\EasyTracer.h

@@ -62,6 +62,7 @@ opticflowcar_f407ve\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS
 opticflowcar_f407ve\freertos.o: ..\Drivers\BSP\motoctrl.h
 opticflowcar_f407ve\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h
 opticflowcar_f407ve\freertos.o: ../Inc/usart.h
+opticflowcar_f407ve\freertos.o: ..\Middlewares\Third_Party\Easytracer\EasyTracer.h
 opticflowcar_f407ve\freertos.o: ..\Drivers\BSP\mpu9250\mpu9250.h
 opticflowcar_f407ve\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h
 opticflowcar_f407ve\freertos.o: ../Inc/eeprom.h
@@ -129,4 +130,5 @@ opticflowcar_f407ve\freertos.o: ..\Middlewares\Third_Party\STemWinLibrary532\inc
 opticflowcar_f407ve\freertos.o: ..\Middlewares\Third_Party\STemWinLibrary532\inc\TREEVIEW.h
 opticflowcar_f407ve\freertos.o: ..\Middlewares\Third_Party\STemWinLibrary532\inc\KNOB.h
 opticflowcar_f407ve\freertos.o: ..\Middlewares\Third_Party\STemWinLibrary532\Config\DataDisplayDLG.h
-opticflowcar_f407ve\freertos.o: ..\Middlewares\Third_Party\Easytracer\EasyTracer.h
+opticflowcar_f407ve\freertos.o: ..\Drivers\BSP\servoctrl.h
+opticflowcar_f407ve\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h

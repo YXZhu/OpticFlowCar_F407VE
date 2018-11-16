@@ -57,6 +57,7 @@ opticflowcar_f407ve\motoctrl.o: ../Middlewares/Third_Party/FreeRTOS/Source/inclu
 opticflowcar_f407ve\motoctrl.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h
 opticflowcar_f407ve\motoctrl.o: ../Inc/usart.h
 opticflowcar_f407ve\motoctrl.o: ../Inc/tim.h
+opticflowcar_f407ve\motoctrl.o: ..\Middlewares\Third_Party\Easytracer\EasyTracer.h
 opticflowcar_f407ve\motoctrl.o: ..\Drivers\BSP\pmw3901.h
 opticflowcar_f407ve\motoctrl.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h
 opticflowcar_f407ve\motoctrl.o: ..\Drivers\BSP\VL53L0X_Api\vl53l0x.h
